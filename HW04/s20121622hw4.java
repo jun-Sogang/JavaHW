@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Random;
+
 
 
 class windowDestroyer extends WindowAdapter {
@@ -20,6 +22,7 @@ public class s20121622hw4 extends Frame implements ActionListener{
    private int bSize[] = new int [10000];
    private int bX[] = new int [10000];
    private int bY[] = new int [10000];
+   private int bTime[] = new int [10000];
    private int count = 0;
    
    public s20121622hw4 () {
@@ -47,11 +50,12 @@ public class s20121622hw4 extends Frame implements ActionListener{
    @Override
    public void actionPerformed(ActionEvent e) {
       if (e.getActionCommand() == "start") {
-         Ball b1 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, 3, 2, 20);
-         Ball b2 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, -3, 6, 20);
-         Ball b3 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, -2, -1, 20);
-         Ball b4 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, 4, -2, 20);
-         Ball b5 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, 1, -1, 20);
+    	  Random random = new Random();
+         Ball b1 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, random.nextInt(11) - 5, random.nextInt(11) - 5, 20);
+         Ball b2 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, random.nextInt(11) - 5, random.nextInt(11) - 5, 20);
+         Ball b3 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, random.nextInt(11) - 5, random.nextInt(11) - 5, 20);
+         Ball b4 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, random.nextInt(11) - 5, random.nextInt(11) - 5, 20);
+         Ball b5 = new Ball(canvas, canvas.getSize().width/2, canvas.getSize().height/2, random.nextInt(11) - 5, random.nextInt(11) - 5, 20);
 
 
          b1.start();
@@ -98,6 +102,7 @@ public class s20121622hw4 extends Frame implements ActionListener{
             bX[count] = x;
             bY[count] = y;
             bSize[count] = SIZE;
+            bTime[count] = time;
             
             this.myCount = count;
             count += 1;
@@ -114,29 +119,41 @@ public class s20121622hw4 extends Frame implements ActionListener{
          //   g.setXORMode(box.getBackground());
             Dimension d = box.getSize();
             
+            
             if (this.SIZE == 0) return ;
 
             g.setColor(Color.WHITE);
             g.fillOval(this.x, this.y, this.SIZE, this.SIZE);  
+            
             g.setColor(Color.BLACK);
-            System.out.println("x : " + x + " y : " + y + " Size : " + SIZE + "\n");
+            this.SIZE = bSize[this.myCount];
+            this.time = bTime[this.myCount];
+
+//            System.out.println("x : " + x + " y : " + y + " Size : " + SIZE + "\n");
 
             for (int i = 0; i < ballNumber; ++i) {
             	
                if (i == this.myCount) continue;
-               System.out.println("i : " + i + " bx : " + bX[i] + " bY : " + bY[i] + " bSize : " + bSize[i] + "\n");
+               //System.out.println("i : " + i + " bx : " + bX[i] + " bY : " + bY[i] + " bSize : " + bSize[i] + "\n");
 
-               if (collision(this.x, this.y, this.SIZE, bX[i], bY[i], bSize[i]) && this.time >= 10) {
-                   System.out.println("----------==============--------!!!");
+               if (collision(this.x, this.y, this.SIZE, bX[i], bY[i], bSize[i]) && this.time >= 12) {
+                 //  System.out.println("----------==============--------!!!");
 
-                  System.out.println("x : " + x + " y : " + y + " Size : " + SIZE + " \nbX : " + bX[i] + " bY : " + bY[i] + " bSize : " + bSize[i]);
-                  System.out.println("Collision!!!");
+                 // System.out.println("x : " + x + " y : " + y + " Size : " + SIZE + " \nbX : " + bX[i] + " bY : " + bY[i] + " bSize : " + bSize[i]);
+                 // System.out.println("Collision!!!");
                   
                   this.SIZE /= 2;
                   this.time = 0;
+                  bTime[i] = 0;
+                  bSize[i] /= 2;
                   
-                  Ball b = new Ball(canvas, this.x, this.y, dy /dx - dx, dx / dy - dy , this.SIZE);
-                  b.start();
+                  int tDX = dx + 1 == 0 ? dx : dx + 1;
+                  int tDY = dy + 1 == 0 ? dy : dy + 1;
+                  
+                  Ball b1 = new Ball(canvas, bX[i], bY[i], dx / (tDY) - dy, dy / (tDX) - dx, bSize[i]);
+                 Ball b2 = new Ball(canvas, this.x, this.y, dy / (tDX) - dx, dx / (tDY) - dy , this.SIZE);
+                  b1.start();
+                  b2.start();
                }
             }
             
@@ -147,6 +164,7 @@ public class s20121622hw4 extends Frame implements ActionListener{
             bX[this.myCount] = this.x;
             bY[this.myCount] = this.y;
             bSize[this.myCount] = this.SIZE; 
+            bTime[this.myCount] = this.time;
          
             if (this.x < 0) { 
             	this.x = 0; dx = -dx; 
@@ -170,14 +188,13 @@ public class s20121622hw4 extends Frame implements ActionListener{
          }
       
       public boolean collision(int x1, int y1, int size1, int x2, int y2, int size2) {
-         double dist;
+    	 int dist;
          
          if (size1 <= 1 || size2 <= 1) return false;
          
-         dist = Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+         dist =(x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
          
-         if (dist  <= (size1 + size2) / 2) {
-        	 System.out.println(dist);
+         if (dist * 4  <= (size1 + size2) * (size1 + size2)) {
             return true;
          }
          
@@ -198,7 +215,7 @@ public class s20121622hw4 extends Frame implements ActionListener{
         	  }
                   
           try {
-        	  Thread.sleep(20); 
+        	  Thread.sleep(100); 
         	  } 
           catch(InterruptedException e) {}
           }
